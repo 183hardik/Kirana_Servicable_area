@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kirana Service Areas</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff2e3;
+      margin: 0; padding: 0;
+    }
+    h2 {
+      text-align: center;
+      color: #66104d;
+      padding: 15px;
+    }
+    .map-container {
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+    }
+    .map-box {
+      width: 48%;
+      border: 2px solid #66104d;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    .map-title {
+      background: #66104d;
+      color: #fff2e3;
+      text-align: center;
+      padding: 6px;
+      font-weight: bold;
+    }
+    .map {
+      height: 450px;
+      width: 100%;
+    }
+    .inputs {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 15px;
+    }
+    .inputs div {
+      background: #fff2e3;
+      border: 2px solid #66104d;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      min-width: 160px;
+      transition: 0.3s;
+    }
+    .inputs div:hover {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .inputs h4 {
+      margin-top: 0;
+      color: #66104d;
+      text-align: center;
+    }
+    .inputs label {
+      font-size: 13px;
+      color: #66104d;
+      font-weight: bold;
+    }
+    .inputs input {
+      width: 100%;
+      margin: 3px 0 6px;
+      padding: 5px;
+      border: 1px solid #66104d;
+      border-radius: 6px;
+      outline: none;
+      font-size: 14px;
+    }
+    .inputs input:focus {
+      border-color: #4a0b36;
+      box-shadow: 0 0 4px #66104d;
+    }
+    .score-display {
+      margin-top: 8px;
+      font-weight: bold;
+      color: #66104d;
+      text-align: center;
+    }
+    button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #66104d;
+      color: #fff2e3;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #4a0b36;
+    }
+    .tiny-label {
+      font-size: 10px;
+      color: #66104d;
+      background: rgba(255,242,227,0.8);
+      border-radius: 3px;
+      padding: 1px 3px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📍 Kirana Service Areas (Sub-Urban Region)</h2>
+
+<div class="map-container">
+  <div class="map-box">
+    <div class="map-title">Initial Areas</div>
+    <div id="mapInitial" class="map"></div>
+  </div>
+  <div class="map-box">
+    <div class="map-title">Final Areas (After Score Update)</div>
+    <div id="mapFinal" class="map"></div>
+  </div>
+</div>
+
+<div class="inputs">
+  <div><h4>Kirana A</h4>
+    <label>OTD (On-Time Delivery %)</label><br>
+    <input type="number" id="k1_otd" value="90"><br>
+    <label>FADR (First Attempt Delivery Rate %)</label><br>
+    <input type="number" id="k1_fadr" value="85"><br>
+    <label>CFS (Customer Feedback Score 1–5)</label><br>
+    <input type="number" id="k1_cfs" value="4.5"><br>
+    <label>RR (Return Rate %)</label><br>
+    <input type="number" id="k1_rr" value="5"><br>
+    <label>CR (Complaint Rate %)</label><br>
+    <input type="number" id="k1_cr" value="2"><br>
+    <div id="k1_score" class="score-display">Score: -</div>
+  </div>
+  <div><h4>Kirana B</h4>
+    <label>OTD (On-Time Delivery %)</label><br>
+    <input type="number" id="k2_otd" value="80"><br>
+    <label>FADR (First Attempt Delivery Rate %)</label><br>
+    <input type="number" id="k2_fadr" value="70"><br>
+    <label>CFS (Customer Feedback Score 1–5)</label><br>
+    <input type="number" id="k2_cfs" value="4.0"><br>
+    <label>RR (Return Rate %)</label><br>
+    <input type="number" id="k2_rr" value="10"><br>
+    <label>CR (Complaint Rate %)</label><br>
+    <input type="number" id="k2_cr" value="5"><br>
+    <div id="k2_score" class="score-display">Score: -</div>
+  </div>
+  <div><h4>Kirana C</h4>
+    <label>OTD (On-Time Delivery %)</label><br>
+    <input type="number" id="k3_otd" value="85"><br>
+    <label>FADR (First Attempt Delivery Rate %)</label><br>
+    <input type="number" id="k3_fadr" value="80"><br>
+    <label>CFS (Customer Feedback Score 1–5)</label><br>
+    <input type="number" id="k3_cfs" value="4.2"><br>
+    <label>RR (Return Rate %)</label><br>
+    <input type="number" id="k3_rr" value="7"><br>
+    <label>CR (Complaint Rate %)</label><br>
+    <input type="number" id="k3_cr" value="3"><br>
+    <div id="k3_score" class="score-display">Score: -</div>
+  </div>
+  <div><h4>Kirana D</h4>
+    <label>OTD (On-Time Delivery %)</label><br>
+    <input type="number" id="k4_otd" value="75"><br>
+    <label>FADR (First Attempt Delivery Rate %)</label><br>
+    <input type="number" id="k4_fadr" value="65"><br>
+    <label>CFS (Customer Feedback Score 1–5)</label><br>
+    <input type="number" id="k4_cfs" value="3.8"><br>
+    <label>RR (Return Rate %)</label><br>
+    <input type="number" id="k4_rr" value="12"><br>
+    <label>CR (Complaint Rate %)</label><br>
+    <input type="number" id="k4_cr" value="6"><br>
+    <div id="k4_score" class="score-display">Score: -</div>
+  </div>
+</div>
+
+<button onclick="updateServiceAreas()">Update Final Areas</button>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  function createMap(divId) {
+    let m = L.map(divId).setView([28.7041, 77.1025], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(m);
+    return m;
+  }
+
+  var mapInitial = createMap("mapInitial");
+  var mapFinal = createMap("mapFinal");
+
+  var kiranaCoords = [
+    [28.7050, 77.1015], 
+    [28.7050, 77.1035],
+    [28.7032, 77.1015],
+    [28.7032, 77.1035]
+  ];
+
+  var kiranaLabels = ["A","B","C","D"];
+  var initialCircles = [], finalCircles = [], labels = [];
+
+  // Initial circles
+  for (let i=0; i<4; i++) {
+    let circle = L.circle(kiranaCoords[i], {
+      radius: 280,
+      color: '#66104d',
+      fillColor: '#66104d',
+      fillOpacity: 0.2
+    }).addTo(mapInitial);
+    initialCircles.push(circle);
+    L.marker(kiranaCoords[i]).addTo(mapInitial).bindPopup("Kirana " + kiranaLabels[i]);
+    let label = L.tooltip({ permanent: true, direction: 'center', className: 'radius-label' })
+      .setContent(kiranaLabels[i] + ": 280 m")
+      .setLatLng(kiranaCoords[i])
+      .addTo(mapInitial);
+    labels.push(label);
+  }
+
+  // Square boundary
+  var squareBounds = [
+    [28.7060, 77.1005],
+    [28.7060, 77.1045],
+    [28.7022, 77.1045],
+    [28.7022, 77.1005]
+  ];
+  L.polygon(squareBounds, {color: "#66104d", weight: 2, fillOpacity: 0}).addTo(mapInitial);
+  L.polygon(squareBounds, {color: "#66104d", weight: 2, fillOpacity: 0}).addTo(mapFinal);
+
+  // Tiny square label
+  L.tooltip({ permanent: true, direction: 'bottom', className: 'tiny-label' })
+    .setContent("2 km² coverage")
+    .setLatLng([28.7020, 77.1025])
+    .addTo(mapInitial);
+  L.tooltip({ permanent: true, direction: 'bottom', className: 'tiny-label' })
+    .setContent("2 km² coverage")
+    .setLatLng([28.7020, 77.1025])
+    .addTo(mapFinal);
+
+  function calculateScore(otd, fadr, cfs, rr, cr) {
+    return (0.30 * otd) + (0.25 * fadr) + (20 * (cfs / 5)) - (0.15 * rr) - (0.10 * cr);
+  }
+
+  function updateServiceAreas() {
+    let neutralScore = 55;  
+    let maxChange = 40; 
+    let baseRadius = 280;
+
+    finalCircles.forEach(c => mapFinal.removeLayer(c));
+    finalCircles = [];
+    labels.forEach(l => mapFinal.removeLayer(l));
+    labels = [];
+
+    for (let i=0; i<4; i++) {
+      let otd = parseFloat(document.getElementById(`k${i+1}_otd`).value);
+      let fadr = parseFloat(document.getElementById(`k${i+1}_fadr`).value);
+      let cfs = parseFloat(document.getElementById(`k${i+1}_cfs`).value);
+      let rr = parseFloat(document.getElementById(`k${i+1}_rr`).value);
+      let cr = parseFloat(document.getElementById(`k${i+1}_cr`).value);
+
+      let score = calculateScore(otd, fadr, cfs, rr, cr);
+      document.getElementById(`k${i+1}_score`).innerText = "Score: " + score.toFixed(1);
+
+      let diff = score - neutralScore;
+      let radiusChange = diff * 3;
+      if (radiusChange > maxChange) radiusChange = maxChange;
+      if (radiusChange < -maxChange) radiusChange = -maxChange;
+      let newRadius = baseRadius + radiusChange;
+
+      let circle = L.circle(kiranaCoords[i], {
+        radius: newRadius,
+        color: 'green',
+        fillColor: 'green',
+        fillOpacity: 0.2
+      }).addTo(mapFinal);
+      finalCircles.push(circle);
+
+      L.marker(kiranaCoords[i]).addTo(mapFinal).bindPopup("Kirana " + kiranaLabels[i]);
+      let label = L.tooltip({ permanent: true, direction: 'center', className: 'radius-label' })
+        .setContent(kiranaLabels[i] + ": " + newRadius.toFixed(0) + " m")
+        .setLatLng(kiranaCoords[i])
+        .addTo(mapFinal);
+      labels.push(label);
+    }
+  }
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
