@@ -15,7 +15,29 @@
       text-align: center;
       color: #66104d;
       padding: 15px;
-      font-size: 35px; /* Increased font size */
+      font-size: 35px;
+    }
+    .mode-buttons {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .mode-buttons button {
+      margin: 5px;
+      padding: 10px 18px;
+      font-size: 15px;
+      background: #66104d;
+      color: #fff2e3;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .mode-buttons button:hover {
+      background: #4a0b36;
+    }
+    .mode-buttons button.active {
+      background: #4a0b36;
+      border: 2px solid #fff2e3;
     }
     .map-container {
       display: flex;
@@ -89,7 +111,7 @@
       color: #66104d;
       text-align: center;
     }
-    button {
+    button.update {
       display: block;
       margin: 20px auto;
       padding: 10px 20px;
@@ -101,7 +123,7 @@
       cursor: pointer;
       transition: 0.3s;
     }
-    button:hover {
+    button.update:hover {
       background: #4a0b36;
     }
     .tiny-label {
@@ -111,11 +133,38 @@
       border-radius: 3px;
       padding: 1px 3px;
     }
+    .logic-box {
+      max-width: 850px;
+      margin: 0 auto 40px;
+      background: #fff;
+      border: 2px solid #66104d;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #333;
+    }
+    .logic-box h3 {
+      margin-top: 0;
+      color: #66104d;
+      font-size: 18px;
+    }
+    .logic-box code {
+      background: #f4e9f0;
+      padding: 2px 5px;
+      border-radius: 5px;
+      color: #66104d;
+    }
   </style>
 </head>
 <body>
 
-<h2>📍 Kirana Service Areas (Sub-Urban Region)</h2>
+<h2>📍 Kirana Service Areas</h2>
+
+<div class="mode-buttons">
+  <button id="suburbanBtn" onclick="setMode('suburban')">Sub-Urban</button>
+  <button id="denseBtn" onclick="setMode('dense')">Dense Urban</button>
+</div>
 
 <div class="map-container">
   <div class="map-box">
@@ -128,65 +177,56 @@
   </div>
 </div>
 
-<div class="inputs">
-  <div><h4>Kirana A</h4>
-    <label>OTD (On-Time Delivery %)</label><br>
-    <input type="number" id="k1_otd" value="90"><br>
-    <label>FADR (First Attempt Delivery Rate %)</label><br>
-    <input type="number" id="k1_fadr" value="85"><br>
-    <label>CFS (Customer Feedback Score 1–5)</label><br>
-    <input type="number" id="k1_cfs" value="4.5"><br>
-    <label>RR (Return Rate %)</label><br>
-    <input type="number" id="k1_rr" value="5"><br>
-    <label>CR (Complaint Rate %)</label><br>
-    <input type="number" id="k1_cr" value="2"><br>
-    <div id="k1_score" class="score-display">Score: -</div>
-  </div>
-  <div><h4>Kirana B</h4>
-    <label>OTD (On-Time Delivery %)</label><br>
-    <input type="number" id="k2_otd" value="80"><br>
-    <label>FADR (First Attempt Delivery Rate %)</label><br>
-    <input type="number" id="k2_fadr" value="70"><br>
-    <label>CFS (Customer Feedback Score 1–5)</label><br>
-    <input type="number" id="k2_cfs" value="4.0"><br>
-    <label>RR (Return Rate %)</label><br>
-    <input type="number" id="k2_rr" value="10"><br>
-    <label>CR (Complaint Rate %)</label><br>
-    <input type="number" id="k2_cr" value="5"><br>
-    <div id="k2_score" class="score-display">Score: -</div>
-  </div>
-  <div><h4>Kirana C</h4>
-    <label>OTD (On-Time Delivery %)</label><br>
-    <input type="number" id="k3_otd" value="85"><br>
-    <label>FADR (First Attempt Delivery Rate %)</label><br>
-    <input type="number" id="k3_fadr" value="80"><br>
-    <label>CFS (Customer Feedback Score 1–5)</label><br>
-    <input type="number" id="k3_cfs" value="4.2"><br>
-    <label>RR (Return Rate %)</label><br>
-    <input type="number" id="k3_rr" value="7"><br>
-    <label>CR (Complaint Rate %)</label><br>
-    <input type="number" id="k3_cr" value="3"><br>
-    <div id="k3_score" class="score-display">Score: -</div>
-  </div>
-  <div><h4>Kirana D</h4>
-    <label>OTD (On-Time Delivery %)</label><br>
-    <input type="number" id="k4_otd" value="75"><br>
-    <label>FADR (First Attempt Delivery Rate %)</label><br>
-    <input type="number" id="k4_fadr" value="65"><br>
-    <label>CFS (Customer Feedback Score 1–5)</label><br>
-    <input type="number" id="k4_cfs" value="3.8"><br>
-    <label>RR (Return Rate %)</label><br>
-    <input type="number" id="k4_rr" value="12"><br>
-    <label>CR (Complaint Rate %)</label><br>
-    <input type="number" id="k4_cr" value="6"><br>
-    <div id="k4_score" class="score-display">Score: -</div>
-  </div>
-</div>
+<div id="inputsContainer" class="inputs"></div>
 
-<button onclick="updateServiceAreas()">Update Final Areas</button>
+<button class="update" onclick="updateServiceAreas()">Update Final Areas</button>
+
+<!-- EXPLANATION BLOCK -->
+<div class="logic-box">
+  <h3>🔎 Logic for Adjusting Kirana Service Areas</h3>
+  <p>
+    Each Kirana is given an initial circular service area (depending on mode).  
+    After entering performance inputs, the <b>score</b> for each Kirana is calculated using the weighted formula:
+  </p>
+  <p style="margin-left:20px;">
+    <code>Score = (0.30 × OTD) + (0.25 × FADR) + (20 × (CFS / 5)) − (0.15 × RR) − (0.10 × CR)</code>
+  </p>
+  <ul>
+    <li><b>OTD</b>: On-Time Delivery (%)</li>
+    <li><b>FADR</b>: First Attempt Delivery Rate (%)</li>
+    <li><b>CFS</b>: Customer Feedback Score (1–5)</li>
+    <li><b>RR</b>: Return Rate (%)</li>
+    <li><b>CR</b>: Complaint Rate (%)</li>
+  </ul>
+  <p>
+    Then, the <b>Neutral Score</b> is computed as the average score of all Kiranas.  
+    Each Kirana’s final radius is adjusted relative to this Neutral Score:
+  </p>
+  <p style="margin-left:20px;">
+    <code>Final Radius = Base Radius + (Score − Neutral Score) × Factor</code>
+  </p>
+  <ul>
+    <li><b>Base Radius</b>: 450 m (Sub-Urban) or 310 m (Dense Urban)</li>
+    <li><b>Factor</b>: 5 (i.e., every 1 point above/below neutral = ±5 m change)</li>
+    <li>For Dense-Urban areas , the max and min radii are 500 m and 400m .</li>
+    <li>For Sub-Urban areas , the max and min radii are 360 m and 260m .</li>
+  </ul>
+  <p>
+    This ensures that <b>high-performing Kiranas cover a larger area</b>, while lower-scoring Kiranas  
+    have their coverage reduced, all within controlled limits.
+  </p>
+</div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+  let mode = "suburban";
+  let kiranaCoords = [], kiranaLabels = [];
+  let mapInitial, mapFinal;
+  let initialCircles = [], finalCircles = [];
+  let initialLabels = [], finalLabels = [];
+  let initialMarkers = [], finalMarkers = [];
+  let squareLayers = [], squareLabels = [];
+
   function createMap(divId) {
     let m = L.map(divId).setView([28.7041, 77.1025], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -195,71 +235,180 @@
     return m;
   }
 
-  var mapInitial = createMap("mapInitial");
-  var mapFinal = createMap("mapFinal");
+  mapInitial = createMap("mapInitial");
+  mapFinal = createMap("mapFinal");
 
-  var kiranaCoords = [
-    [28.7050, 77.1015], 
-    [28.7050, 77.1035],
-    [28.7032, 77.1015],
-    [28.7032, 77.1035]
-  ];
+  var center = [28.7041, 77.1025];
+  var dLat2 = 0.0045;  
+  var dLng2 = 0.0045 / Math.cos(center[0] * Math.PI/180); 
+  var dLat = 0.00635;  
+  var dLng = 0.00723;
 
-  var kiranaLabels = ["A","B","C","D"];
-  var initialCircles = [], finalCircles = [], labels = [];
-
-  // Initial circles
-  for (let i=0; i<4; i++) {
-    let circle = L.circle(kiranaCoords[i], {
-      radius: 280,
-      color: '#66104d',
-      fillColor: '#66104d',
-      fillOpacity: 0.2
-    }).addTo(mapInitial);
-    initialCircles.push(circle);
-    L.marker(kiranaCoords[i]).addTo(mapInitial).bindPopup("Kirana " + kiranaLabels[i]);
-    let label = L.tooltip({ permanent: true, direction: 'center', className: 'radius-label' })
-      .setContent(kiranaLabels[i] + ": 280 m")
-      .setLatLng(kiranaCoords[i])
-      .addTo(mapInitial);
-    labels.push(label);
+  function clearSquares() {
+    squareLayers.forEach(s => { mapInitial.removeLayer(s); mapFinal.removeLayer(s); });
+    squareLabels.forEach(l => { mapInitial.removeLayer(l); mapFinal.removeLayer(l); });
+    squareLayers = []; squareLabels = [];
   }
 
-  // Square boundary
-  var squareBounds = [
-    [28.7060, 77.1005],
-    [28.7060, 77.1045],
-    [28.7022, 77.1045],
-    [28.7022, 77.1005]
-  ];
-  L.polygon(squareBounds, {color: "#66104d", weight: 2, fillOpacity: 0}).addTo(mapInitial);
-  L.polygon(squareBounds, {color: "#66104d", weight: 2, fillOpacity: 0}).addTo(mapFinal);
+  function drawSquare(bounds, labelText) {
+    let sq1 = L.polygon(bounds, {color: "#66104d", weight: 2, fillOpacity: 0}).addTo(mapInitial);
+    let sq2 = L.polygon(bounds, {color: "#66104d", weight: 2, fillOpacity: 0}).addTo(mapFinal);
+    squareLayers.push(sq1, sq2);
+    let lbl1 = L.tooltip({ permanent: true, direction: 'bottom', className: 'tiny-label' })
+      .setContent(labelText).setLatLng(center).addTo(mapInitial);
+    let lbl2 = L.tooltip({ permanent: true, direction: 'bottom', className: 'tiny-label' })
+      .setContent(labelText).setLatLng(center).addTo(mapFinal);
+    squareLabels.push(lbl1, lbl2);
+  }
 
-  // Tiny square label
-  L.tooltip({ permanent: true, direction: 'bottom', className: 'tiny-label' })
-    .setContent("2 km² coverage")
-    .setLatLng([28.7020, 77.1025])
-    .addTo(mapInitial);
-  L.tooltip({ permanent: true, direction: 'bottom', className: 'tiny-label' })
-    .setContent("2 km² coverage")
-    .setLatLng([28.7020, 77.1025])
-    .addTo(mapFinal);
+  function setMode(selectedMode) {
+    mode = selectedMode;
+
+    document.getElementById("suburbanBtn").classList.remove("active");
+    document.getElementById("denseBtn").classList.remove("active");
+    if (mode === "suburban") {
+      document.getElementById("suburbanBtn").classList.add("active");
+    } else {
+      document.getElementById("denseBtn").classList.add("active");
+    }
+
+    initialCircles.forEach(c => mapInitial.removeLayer(c));
+    initialLabels.forEach(l => mapInitial.removeLayer(l));
+    initialMarkers.forEach(m => mapInitial.removeLayer(m));
+    finalCircles.forEach(c => mapFinal.removeLayer(c));
+    finalMarkers.forEach(m => mapFinal.removeLayer(m));
+    finalLabels.forEach(l => mapFinal.removeLayer(l));
+    clearSquares();
+
+    initialCircles = []; initialLabels = []; initialMarkers = [];
+    finalCircles = []; finalLabels = []; finalMarkers = [];
+
+    kiranaCoords = [];
+    kiranaLabels = [];
+
+if (mode === "suburban") {
+  let squareBounds = [
+    [center[0] + dLat, center[1] - dLng],
+    [center[0] + dLat, center[1] + dLng],
+    [center[0] - dLat, center[1] + dLng],
+    [center[0] - dLat, center[1] - dLng]
+  ];
+  drawSquare(squareBounds, "2 km² coverage");
+
+  kiranaLabels = ["A","B","C","D","E"];
+
+  // offsets for ~800 m square (half-side ~400 m)
+  let latOffset = 0.0036;  // ≈ 400 m north/south
+  let lngOffset = 0.0040;  // ≈ 400 m east/west
+
+  kiranaCoords = [
+    [center[0] + latOffset, center[1] - lngOffset], // top-left
+    [center[0] + latOffset, center[1] + lngOffset], // top-right
+    [center[0] - latOffset, center[1] - lngOffset], // bottom-left
+    [center[0] - latOffset, center[1] + lngOffset], // bottom-right
+    [center[0], center[1]]                          // center
+  ];
+  createInputs(5);
+  drawInitialCircles(450);
+
+    } else if (mode === "dense") {
+      let squareBounds = [
+        [center[0] + dLat2, center[1] - dLng2],
+        [center[0] + dLat2, center[1] + dLng2],
+        [center[0] - dLat2, center[1] + dLng2],
+        [center[0] - dLat2, center[1] - dLng2]
+      ];
+      drawSquare(squareBounds, "1 km² coverage");
+
+      kiranaLabels = ["A","B","C","D","E"];
+      kiranaCoords = [
+        [center[0] + dLat2/2, center[1] - dLng2/2],
+        [center[0] + dLat2/2, center[1] + dLng2/2],
+        [center[0] - dLat2/2, center[1] - dLng2/2],
+        [center[0] - dLat2/2, center[1] + dLng2/2],
+        [center[0], center[1]]
+      ];
+      createInputs(5);
+      drawInitialCircles(310);
+    }
+  }
+
+  function createInputs(num) {
+    const container = document.getElementById("inputsContainer");
+    container.innerHTML = "";
+
+    const suburbanDefaults = [
+      {otd:90, fadr:85, cfs:4.5, rr:5, cr:2},
+      {otd:80, fadr:75, cfs:4.0, rr:8, cr:4},
+      {otd:85, fadr:80, cfs:4.2, rr:7, cr:3},
+      {otd:78, fadr:70, cfs:3.8, rr:10, cr:5},
+      {otd:88, fadr:82, cfs:4.3, rr:6, cr:3}
+    ];
+    const denseDefaults = [
+      {otd:92, fadr:88, cfs:4.6, rr:4, cr:1},
+      {otd:85, fadr:80, cfs:4.3, rr:6, cr:3},
+      {otd:78, fadr:72, cfs:3.9, rr:9, cr:5},
+      {otd:83, fadr:77, cfs:4.1, rr:7, cr:4},
+      {otd:87, fadr:82, cfs:4.4, rr:5, cr:2}
+    ];
+
+    for (let i=0; i<num; i++) {
+      let vals = (mode === "suburban") ? suburbanDefaults[i] : denseDefaults[i];
+      container.innerHTML += `
+        <div>
+          <h4>Kirana ${kiranaLabels[i]}</h4>
+          <label>OTD (On-Time Delivery %)</label><br>
+          <input type="number" id="k${i+1}_otd" value="${vals.otd}"><br>
+          <label>FADR (First Attempt Delivery Rate %)</label><br>
+          <input type="number" id="k${i+1}_fadr" value="${vals.fadr}"><br>
+          <label>CFS (Customer Feedback Score 1–5)</label><br>
+          <input type="number" id="k${i+1}_cfs" value="${vals.cfs}"><br>
+          <label>RR (Return Rate %)</label><br>
+          <input type="number" id="k${i+1}_rr" value="${vals.rr}"><br>
+          <label>CR (Complaint Rate %)</label><br>
+          <input type="number" id="k${i+1}_cr" value="${vals.cr}"><br>
+          <div id="k${i+1}_score" class="score-display">Score: -</div>
+        </div>`;
+    }
+  }
+
+  function drawInitialCircles(radius) {
+    for (let i=0; i<kiranaCoords.length; i++) {
+      let circle = L.circle(kiranaCoords[i], {
+        radius: radius,
+        color: '#66104d',
+        fillColor: '#66104d',
+        fillOpacity: 0.2
+      }).addTo(mapInitial);
+      initialCircles.push(circle);
+      let marker = L.marker(kiranaCoords[i]).addTo(mapInitial).bindPopup("Kirana " + kiranaLabels[i]);
+      initialMarkers.push(marker);
+      let label = L.tooltip({ permanent: true, direction: 'center', className: 'radius-label' })
+        .setContent(kiranaLabels[i] + ": " + radius + " m")
+        .setLatLng(kiranaCoords[i])
+        .addTo(mapInitial);
+      initialLabels.push(label);
+    }
+  }
 
   function calculateScore(otd, fadr, cfs, rr, cr) {
     return (0.30 * otd) + (0.25 * fadr) + (20 * (cfs / 5)) - (0.15 * rr) - (0.10 * cr);
   }
 
   function updateServiceAreas() {
-    let neutralScore = 55;  
-    let maxChange = 40; 
-    let baseRadius = 280;
-
     finalCircles.forEach(c => mapFinal.removeLayer(c));
-    finalCircles = [];
-    labels.forEach(l => mapFinal.removeLayer(l));
-    labels = [];
+    finalMarkers.forEach(m => mapFinal.removeLayer(m));
+    finalLabels.forEach(l => mapFinal.removeLayer(l));
+    finalCircles = []; finalMarkers = []; finalLabels = [];
 
-    for (let i=0; i<4; i++) {
+    let maxChange = 40;
+    let baseRadius = (mode === "suburban") ? 450 : 310;
+    let minR = (mode === "suburban") ? 400 : 260;
+    let maxR = (mode === "suburban") ? 500 : 360;
+
+    // First calculate all scores
+    let scores = [];
+    for (let i=0; i<kiranaCoords.length; i++) {
       let otd = parseFloat(document.getElementById(`k${i+1}_otd`).value);
       let fadr = parseFloat(document.getElementById(`k${i+1}_fadr`).value);
       let cfs = parseFloat(document.getElementById(`k${i+1}_cfs`).value);
@@ -267,13 +416,23 @@
       let cr = parseFloat(document.getElementById(`k${i+1}_cr`).value);
 
       let score = calculateScore(otd, fadr, cfs, rr, cr);
+      scores.push(score);
+    }
+    let neutralScore = scores.reduce((a,b) => a+b, 0) / scores.length;
+
+    // Then draw circles based on diff from mean
+    for (let i=0; i<kiranaCoords.length; i++) {
+      let score = scores[i];
       document.getElementById(`k${i+1}_score`).innerText = "Score: " + score.toFixed(1);
 
       let diff = score - neutralScore;
-      let radiusChange = diff * 3;
+      let radiusChange = diff * 5;
       if (radiusChange > maxChange) radiusChange = maxChange;
       if (radiusChange < -maxChange) radiusChange = -maxChange;
       let newRadius = baseRadius + radiusChange;
+
+      if (newRadius > maxR) newRadius = maxR;
+      if (newRadius < minR) newRadius = minR;
 
       let circle = L.circle(kiranaCoords[i], {
         radius: newRadius,
@@ -283,17 +442,22 @@
       }).addTo(mapFinal);
       finalCircles.push(circle);
 
-      L.marker(kiranaCoords[i]).addTo(mapFinal).bindPopup("Kirana " + kiranaLabels[i]);
+      let marker = L.marker(kiranaCoords[i]).addTo(mapFinal).bindPopup("Kirana " + kiranaLabels[i]);
+      finalMarkers.push(marker);
       let label = L.tooltip({ permanent: true, direction: 'center', className: 'radius-label' })
         .setContent(kiranaLabels[i] + ": " + newRadius.toFixed(0) + " m")
         .setLatLng(kiranaCoords[i])
         .addTo(mapFinal);
-      labels.push(label);
+      finalLabels.push(label);
     }
   }
+
+  // Default load suburban
+  setMode("suburban");
 </script>
 </body>
 </html>
+
 
 
 
